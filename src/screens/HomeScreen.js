@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput } from 'react-native';
+import { View, Text, Button, StyleSheet, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Snackbar } from 'react-native-paper';
 import { AuthContext } from '../contexts/AuthContext';
 
@@ -15,24 +15,30 @@ const HomeScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {user?.name || 'User'}!</Text>
-      <Text>You are logged in.</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite uma mensagem"
-        value={inputText}
-        onChangeText={setInputText}
-      />
-      <Button title="Exibir mensagem" onPress={handleShowMessage} />
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-      >
-        {snackbarMsg}
-      </Snackbar>
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={60}
+    >
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>Welcome, {user?.name || 'User'}!</Text>
+        <Text>You are logged in.</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Digite uma mensagem"
+          value={inputText}
+          onChangeText={setInputText}
+        />
+        <Button title="Exibir mensagem" onPress={handleShowMessage} />
+        <Snackbar
+          visible={snackbarVisible}
+          onDismiss={() => setSnackbarVisible(false)}
+          duration={3000}
+        >
+          {snackbarMsg}
+        </Snackbar>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
