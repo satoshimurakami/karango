@@ -1,14 +1,37 @@
-import React, { useContext } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, Button, StyleSheet, TextInput } from 'react-native';
+import { Snackbar } from 'react-native-paper';
 import { AuthContext } from '../contexts/AuthContext';
 
 const HomeScreen = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+  const [inputText, setInputText] = useState('');
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMsg, setSnackbarMsg] = useState('');
+
+  const handleShowMessage = () => {
+    setSnackbarMsg(inputText);
+    setSnackbarVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome, {user?.name || 'User'}!</Text>
       <Text>You are logged in.</Text>
-      {/* Botão de logout removido, agora está no menu */}
+      <TextInput
+        style={styles.input}
+        placeholder="Digite uma mensagem"
+        value={inputText}
+        onChangeText={setInputText}
+      />
+      <Button title="Exibir mensagem" onPress={handleShowMessage} />
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+      >
+        {snackbarMsg}
+      </Snackbar>
     </View>
   );
 };
@@ -23,6 +46,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 20,
     textAlign: 'center',
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
   },
 });
 
