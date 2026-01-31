@@ -23,20 +23,7 @@ const HomeScreen = () => {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Welcome, {user?.name || 'User'}!</Text>
         <Text>You are logged in.</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite uma mensagem"
-          value={inputText}
-          onChangeText={setInputText}
-        />
-        <Button title="Exibir mensagem" onPress={handleShowMessage} />
-        <Snackbar
-          visible={snackbarVisible}
-          onDismiss={() => setSnackbarVisible(false)}
-          duration={3000}
-        >
-          {snackbarMsg}
-        </Snackbar>
+        {/* ...apenas informações do usuário... */}
       </ScrollView>
     </KeyboardAvoidingView>
   );
