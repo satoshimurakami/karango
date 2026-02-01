@@ -7,6 +7,11 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import LogoutScreen from './screens/LogoutScreen';
 import UsersScreen from './screens/UsersScreen';
+import VeiculosScreen from './screens/VeiculosScreen';
+import CadastroVeiculoScreen from './screens/CadastroVeiculoScreen';
+import DashboardScreen from './screens/DashboardScreen';
+import AgendarManutencaoScreen from './screens/AgendarManutencaoScreen';
+import AbastecimentoScreen from './screens/AbastecimentoScreen';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -17,6 +22,8 @@ function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'Início' }} />
+      <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+      <Drawer.Screen name="Veículos" component={VeiculosScreen} />
       <Drawer.Screen name="Usuários" component={UsersScreen} />
       <Drawer.Screen
         name="Sair"
@@ -42,7 +49,12 @@ const AppNavigator = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="Drawer" component={DrawerNavigator} />
+          <>
+            <Stack.Screen name="Drawer" component={DrawerNavigator} />
+            <Stack.Screen name="CadastroVeiculo" component={CadastroVeiculoScreen} />
+            <Stack.Screen name="AgendarManutencao" component={AgendarManutencaoScreen} />
+            <Stack.Screen name="Abastecimento" component={AbastecimentoScreen} />
+          </>
         ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
         )}
