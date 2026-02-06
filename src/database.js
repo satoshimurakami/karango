@@ -107,4 +107,38 @@ export async function deleteVeiculo(id) {
   await db.runAsync('DELETE FROM veiculos WHERE id = ?', [id]);
 }
 
+// Helper functions for brands/types/models
+export async function getVehicleTypes() {
+  try {
+    const db = await getDatabase();
+    const rows = await db.getAllAsync('SELECT DISTINCT vehicleType as vehicleType FROM brands ORDER BY vehicleType;');
+    return rows.map(r => r.vehicleType);
+  } catch (error) {
+    console.error('Erro em getVehicleTypes:', error);
+    throw error;
+  }
+}
+
+export async function getBrandsByType(vehicleType) {
+  try {
+    const db = await getDatabase();
+    const rows = await db.getAllAsync('SELECT DISTINCT brandId as brandId, name FROM brands WHERE vehicleType = ? ORDER BY name;', [vehicleType]);
+    return rows;
+  } catch (error) {
+    console.error('Erro em getBrandsByType:', error);
+    throw error;
+  }
+}
+
+export async function getModelsByBrand(brandId) {
+  try {
+    const db = await getDatabase();
+    const rows = await db.getAllAsync('SELECT DISTINCT modelId as id, modelName as name FROM brands WHERE brandId = ? ORDER BY modelName;', [brandId]);
+    return rows;
+  } catch (error) {
+    console.error('Erro em getModelsByBrand:', error);
+    throw error;
+  }
+}
+
 export default getDatabase;

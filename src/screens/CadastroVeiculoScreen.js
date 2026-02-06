@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { FrotaContext } from '../contexts/FrotaContext';
-import getDatabase from '../database';
+import { getVehicleTypes, getBrandsByType, getModelsByBrand } from '../database';
 
 const CadastroVeiculoScreen = ({ navigation }) => {
   const { addVeiculo } = useContext(FrotaContext);
@@ -20,18 +20,10 @@ const CadastroVeiculoScreen = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       try {
-        console.log('[DEBUG] Loading vehicle types...');
-        const db = await getDatabase();
-        console.log('[DEBUG] Database obtained');
-        const tiposResult = await db.getAllAsync(
-          'SELECT DISTINCT vehicleType FROM brands ORDER BY vehicleType;'
-        );
-        console.log('[DEBUG] Raw tiposResult:', tiposResult);
-        const tipos = tiposResult.map(row => row.vehicleType);
-        console.log('[DEBUG] Processed tipos:', tipos);
-        console.log('[DEBUG] Vehicle types from DB:', tipos);
+        console.log('[DEBUG] Loading vehicle types via helper...');
+        const tipos = await getVehicleTypes();
+        console.log('[DEBUG] Vehicle types from DB (helper):', tipos);
         setTiposVeiculo(tipos);
-        console.log('[DEBUG] State updated with tipos:', tipos);
         if (tipos.length > 0 && !tipo) {
           console.log('[DEBUG] Setting default tipo to:', tipos[0]);
           setTipo(tipos[0]);
@@ -52,16 +44,13 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     }
     (async () => {
       try {
-        const db = await getDatabase();
-        console.log('[DEBUG] Loading brands for vehicleType:', tipo);
-        const brandsResult = await db.getAllAsync(
-          'SELECT * FROM brands WHERE vehicleType = ? ORDER BY name;',
-          [tipo]
-        );
+        console.log('[DEBUG] Loading brands via helper for vehicleType:', tipo);
+        const brandsResult = await getBrandsByType(tipo);
         console.log('[DEBUG] Brands found:', brandsResult.length);
-        setBrands(brandsResult);
-        if (brandsResult.length > 0) {
-          setBrand(brandsResult[0].brandId);
+        const marcas = brandsResult.map(r => ({ brandId: r.brandId, name: r.name }));
+        setBrands(marcas);
+        if (marcas.length > 0) {
+          setBrand(marcas[0].brandId);
         } else {
           setBrand('');
         }
@@ -82,9 +71,8 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     }
     (async () => {
       try {
-        const db = await getDatabase();
-        console.log('[DEBUG] Loading models for brand:', brand, 'Type:', typeof brand);
-        const modelsResult = await db.getAllAsync('SELECT DISTINCT modelId as id, modelName as name FROM brands WHERE brandId = ? ORDER BY modelName;', [brand]);
+        console.log('[DEBUG] Loading models via helper for brand:', brand);
+        const modelsResult = await getModelsByBrand(brand);
         console.log('[DEBUG] Models found:', modelsResult.length);
         setModels(modelsResult);
         if (modelsResult.length > 0) {
