@@ -22,7 +22,9 @@ async function getDatabase() {
 
     // Verificar se há dados na tabela brands
     const brandsCount = await db.getAllAsync('SELECT COUNT(*) as count FROM brands');
+    console.log('Número de registros na tabela brands:', brandsCount[0].count);
     if (brandsCount[0].count === 0) {
+      console.log('Inserindo dados na tabela brands...');
       // Inserir dados de exemplo
       await db.runAsync(`
         INSERT INTO brands (brandId, name, vehicleType, modelId, modelName) VALUES
@@ -39,6 +41,7 @@ async function getDatabase() {
         ('6', 'Honda', 'Carro', '6', 'Civic'),
         ('6', 'Honda', 'Carro', '12', 'Fit')
       `);
+      console.log('Dados inseridos na tabela brands');
     }
   } catch (error) {
     console.error('Erro ao criar/verificar tabela brands:', error);

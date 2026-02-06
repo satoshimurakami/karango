@@ -7,16 +7,11 @@ const VeiculosScreen = ({ navigation }) => {
   const { veiculos, removeVeiculo, loading } = useContext(FrotaContext);
   const [searchText, setSearchText] = useState('');
 
-  console.log('VeiculosScreen - veiculos:', veiculos);
-  console.log('VeiculosScreen - loading:', loading);
-
   const filteredVeiculos = veiculos.filter(veiculo =>
     veiculo.placa.toLowerCase().includes(searchText.toLowerCase()) ||
     veiculo.brandNome.toLowerCase().includes(searchText.toLowerCase()) ||
     veiculo.modelNome.toLowerCase().includes(searchText.toLowerCase())
   );
-
-  console.log('VeiculosScreen - filteredVeiculos:', filteredVeiculos);
 
   const getStatusColor = (status) => {
     // For now, all vehicles are active. In future, add status field

@@ -20,14 +20,20 @@ const CadastroVeiculoScreen = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       try {
+        console.log('[DEBUG] Loading vehicle types...');
         const db = await getDatabase();
+        console.log('[DEBUG] Database obtained');
         const tiposResult = await db.getAllAsync(
           'SELECT DISTINCT vehicleType FROM brands ORDER BY vehicleType;'
         );
+        console.log('[DEBUG] Raw tiposResult:', tiposResult);
         const tipos = tiposResult.map(row => row.vehicleType);
+        console.log('[DEBUG] Processed tipos:', tipos);
         console.log('[DEBUG] Vehicle types from DB:', tipos);
         setTiposVeiculo(tipos);
+        console.log('[DEBUG] State updated with tipos:', tipos);
         if (tipos.length > 0 && !tipo) {
+          console.log('[DEBUG] Setting default tipo to:', tipos[0]);
           setTipo(tipos[0]);
         }
       } catch (error) {
@@ -78,7 +84,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
       try {
         const db = await getDatabase();
         console.log('[DEBUG] Loading models for brand:', brand, 'Type:', typeof brand);
-        const modelsResult = await db.getAllAsync('SELECT * FROM models WHERE brandId = ? ORDER BY name;', [brand]);
+        const modelsResult = await db.getAllAsync('SELECT DISTINCT modelId as id, modelName as name FROM brands WHERE brandId = ? ORDER BY modelName;', [brand]);
         console.log('[DEBUG] Models found:', modelsResult.length);
         setModels(modelsResult);
         if (modelsResult.length > 0) {
@@ -137,10 +143,17 @@ const CadastroVeiculoScreen = ({ navigation }) => {
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={tipo}
-          onValueChange={setTipo}
+          onValueChange={(value) => {
+            console.log('[DEBUG] Tipo selecionado:', value);
+            setTipo(value);
+          }}
           style={styles.picker}
         >
-          {tiposVeiculo.map(t => <Picker.Item key={t} label={t} value={t} />)}
+          <Picker.Item label="Selecione um tipo" value="" />
+          {tiposVeiculo.map(t => {
+            console.log('[DEBUG] Renderizando tipo:', t);
+            return <Picker.Item key={t} label={t} value={t} />;
+          })}
         </Picker>
       </View>
 

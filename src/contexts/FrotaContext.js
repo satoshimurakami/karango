@@ -13,9 +13,7 @@ export const FrotaProvider = ({ children }) => {
   useEffect(() => {
     (async () => {
       try {
-        console.log('Carregando veículos do banco...');
         const veiculosFromDB = await getVeiculos();
-        console.log('Veículos carregados:', veiculosFromDB);
         setVeiculos(veiculosFromDB);
       } catch (error) {
         console.error('Erro ao carregar veículos:', error);
@@ -28,11 +26,8 @@ export const FrotaProvider = ({ children }) => {
   // Adicionar veículo (persiste no SQLite)
   const addVeiculo = async (veiculo) => {
     try {
-      console.log('Salvando veículo:', veiculo);
       await saveVeiculo(veiculo);
-      console.log('Veículo salvo com sucesso');
       setVeiculos(prev => [veiculo, ...prev]);
-      console.log('Estado atualizado com novo veículo');
     } catch (error) {
       console.error('Erro ao salvar veículo:', error);
       throw error;
