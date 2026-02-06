@@ -1,33 +1,50 @@
 import { openDatabaseAsync } from 'expo-sqlite';
-import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const dbName = 'karango_database.db';
-const dbDestination = FileSystem.documentDirectory + 'database.sqlite';
 
 async function getDatabase() {
-  // Se já copiado, apenas abra
-  const destInfo = await FileSystem.getInfoAsync(dbDestination);
-  if (!destInfo.exists) {
-    try {
-      // Local module path to bundled asset
-      const assetModule = require('../assets/db/database.sqlite');
-      const asset = Asset.fromModule(assetModule);
-      await asset.downloadAsync();
-      const assetUri = asset.localUri || asset.uri;
-      if (!assetUri) throw new Error('Não foi possível obter URI do asset database.sqlite');
-      await FileSystem.copyAsync({ from: assetUri, to: dbDestination });
-      console.log('Database copiado dos assets com sucesso');
-    } catch (error) {
-      console.error('Erro ao copiar database dos assets:', error);
-      // Fallback: criar database vazio
-      console.log('Criando database vazio como fallback');
-    }
-  }
-
   const db = await openDatabaseAsync(dbName, undefined, FileSystem.documentDirectory);
 
-  // Criar tabela veiculos se não existir (sempre, pois pode não estar no database.sqlite)
+  // Criar tabelas se não existirem
+  try {
+    // Criar tabela brands
+    await db.runAsync(`
+      CREATE TABLE IF NOT EXISTS brands (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        brandId TEXT,
+        name TEXT,
+        vehicleType TEXT,
+        modelId TEXT,
+        modelName TEXT
+      )
+    `);
+
+    // Verificar se há dados na tabela brands
+    const brandsCount = await db.getAllAsync('SELECT COUNT(*) as count FROM brands');
+    if (brandsCount[0].count === 0) {
+      // Inserir dados de exemplo
+      await db.runAsync(`
+        INSERT INTO brands (brandId, name, vehicleType, modelId, modelName) VALUES
+        ('1', 'Mercedes-Benz', 'Caminhão', '1', 'Sprinter'),
+        ('1', 'Mercedes-Benz', 'Caminhão', '7', 'Actros'),
+        ('2', 'Volkswagen', 'Caminhão', '2', 'Delivery'),
+        ('2', 'Volkswagen', 'Caminhão', '8', 'Constellation'),
+        ('3', 'Ford', 'Caminhão', '3', 'Transit'),
+        ('3', 'Ford', 'Caminhão', '9', 'F-4000'),
+        ('4', 'Chevrolet', 'Carro', '4', 'Onix'),
+        ('4', 'Chevrolet', 'Carro', '10', 'Cruze'),
+        ('5', 'Fiat', 'Carro', '5', 'Uno'),
+        ('5', 'Fiat', 'Carro', '11', 'Palio'),
+        ('6', 'Honda', 'Carro', '6', 'Civic'),
+        ('6', 'Honda', 'Carro', '12', 'Fit')
+      `);
+    }
+  } catch (error) {
+    console.error('Erro ao criar/verificar tabela brands:', error);
+  }
+
+  // Criar tabela veiculos se não existir
   try {
     await db.runAsync(`
       CREATE TABLE IF NOT EXISTS veiculos (
