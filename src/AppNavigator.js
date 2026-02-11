@@ -20,10 +20,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 function DrawerNavigator() {
   return (
-    <Drawer.Navigator initialRouteName="Home">
+    <Drawer.Navigator initialRouteName="Dashboard">
+      <Drawer.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Dashboard' }} />
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'Início' }} />
-      <Drawer.Screen name="Dashboard" component={DashboardScreen} />
       <Drawer.Screen name="Veículos" component={VeiculosScreen} />
+      <Drawer.Screen name="Manutenções" component={require('./screens/ManutencoesScreen').default} options={{ title: 'Manutenções' }} />
       <Drawer.Screen name="Usuários" component={UsersScreen} />
       <Drawer.Screen
         name="Sair"

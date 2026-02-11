@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { saveVeiculo, getVeiculos, deleteVeiculo, updateVeiculo as updateVeiculoDB } from '../database';
+// import removido: '../database'
 
 export const FrotaContext = createContext();
 
