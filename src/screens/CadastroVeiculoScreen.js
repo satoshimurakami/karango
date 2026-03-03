@@ -21,12 +21,9 @@ const CadastroVeiculoScreen = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       try {
-        console.log('[DEBUG] Loading vehicle types via helper...');
         const tipos = await getVehicleTypes();
-        console.log('[DEBUG] Vehicle types from DB (helper):', tipos);
         setTiposVeiculo(tipos);
         if (tipos.length > 0 && !tipo) {
-          console.log('[DEBUG] Setting default tipo to:', tipos[0]);
           setTipo(tipos[0]);
         }
       } catch (error) {
@@ -45,9 +42,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     }
     (async () => {
       try {
-        console.log('[DEBUG] Loading brands via helper for vehicleType:', tipo);
         const brandsResult = await getBrandsByType(tipo);
-        console.log('[DEBUG] Brands found:', brandsResult.length);
         const marcas = brandsResult.map(r => ({ brandId: r.brandId, name: r.name }));
         setBrands(marcas);
         if (marcas.length > 0) {
@@ -72,9 +67,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     }
     (async () => {
       try {
-        console.log('[SCREEN] Effect: loading models for brand:', brand, 'type of brand:', typeof brand);
         const modelsResult = await getModelsByBrand(brand);
-        console.log('[SCREEN] Models received:', modelsResult.length);
         setModels(modelsResult);
         if (modelsResult.length > 0) {
           setModel(modelsResult[0].id.toString());

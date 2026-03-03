@@ -99,21 +99,6 @@ async function initDatabase(db) {
         placa TEXT
       );
     `);
-    // Log counts to verify
-    const brandsCount = await db.getFirstAsync('SELECT COUNT(*) as count FROM brands');
-    const modelsCount = await db.getFirstAsync('SELECT COUNT(*) as count FROM models');
-    console.log(`[DB] Initialization complete. Brands: ${brandsCount.count}, Models: ${modelsCount.count}`);
-    
-    // Debug schema
-    const brandsColumns = await db.getAllAsync('PRAGMA table_info(brands)');
-    const modelsColumns = await db.getAllAsync('PRAGMA table_info(models)');
-    console.log('[DB] Brands columns:', brandsColumns.map(c => c.name).join(', '));
-    console.log('[DB] Models columns:', modelsColumns.map(c => c.name).join(', '));
-
-    const brandSample = await db.getFirstAsync('SELECT * FROM brands LIMIT 1');
-    const modelSample = await db.getFirstAsync('SELECT * FROM models LIMIT 1');
-    console.log('[DB] Brand sample:', JSON.stringify(brandSample));
-    console.log('[DB] Model sample:', JSON.stringify(modelSample));
   } catch (error) {
     console.log('Erro ao inicializar banco:', error);
   }
@@ -147,11 +132,8 @@ export async function deleteVeiculo(id) {
 
 export function getVehicleTypes() {
   return getDb().then(db => 
-    db.getAllAsync('SELECT DISTINCT vehicleType FROM brands').then(rows => {
-      console.log('[DB] Raw vehicle types rows:', JSON.stringify(rows));
-      const types = rows.map(row => row.vehicleType).filter(t => t !== null && t !== '');
-      console.log('[DB] Processed vehicle types:', types);
-      return types;
+    db.getAllAsync('SELECT DISTINCT vehicleType FROM brands ORDER BY vehicleType ASC').then(rows => {
+      return rows.map(row => row.vehicleType).filter(t => t !== null && t !== '');
     })
   );
 }
@@ -159,7 +141,7 @@ export function getVehicleTypes() {
 export function getBrandsByType(tipo) {
   return getDb().then(db => 
     db.getAllAsync(
-      'SELECT brandId, name FROM brands WHERE vehicleType = ?',
+      'SELECT brandId, name FROM brands WHERE vehicleType = ? ORDER BY name ASC',
       [tipo]
     )
   );
@@ -167,13 +149,9 @@ export function getBrandsByType(tipo) {
 
 export function getModelsByBrand(idMarca) {
   return getDb().then(db => {
-    console.log('[DB] Fetching models for brandId:', idMarca);
     return db.getAllAsync(
-      'SELECT id, name FROM models WHERE brandId = ?',
+      'SELECT id, name FROM models WHERE brandId = ? ORDER BY name ASC',
       [idMarca]
-    ).then(rows => {
-      console.log(`[DB] Models found for brand ${idMarca}:`, rows.length);
-      return rows;
-    });
+    );
   });
 }
