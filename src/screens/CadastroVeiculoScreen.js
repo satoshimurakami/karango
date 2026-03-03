@@ -462,13 +462,14 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     borderRadius: 12,
     marginBottom: 16,
-    overflow: 'hidden',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#fff',
+    height: 55,
+    justifyContent: 'center',
   },
   picker: {
-    height: 48,
+    height: 55,
+    width: '100%',
     color: '#222',
-    backgroundColor: '#fff',
   },
   input: {
     height: 48,
