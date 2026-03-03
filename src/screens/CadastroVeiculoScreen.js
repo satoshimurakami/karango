@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, ScrollView, ImageBackground,
 import { Picker } from '@react-native-picker/picker';
 import { FrotaContext } from '../contexts/FrotaContext';
 import { MaterialIcons } from '@expo/vector-icons';
-// import removido: '../database'
+import { getVehicleTypes, getBrandsByType, getModelsByBrand } from '../database2';
 
 const CadastroVeiculoScreen = ({ navigation }) => {
   const { addVeiculo } = useContext(FrotaContext);
@@ -30,7 +30,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
           setTipo(tipos[0]);
         }
       } catch (error) {
-        console.error('Erro ao carregar tipos de veículo:', error);
+        console.error('[SCREEN] Erro ao carregar tipos de veículo:', error);
         setTiposVeiculo([]);
       }
     })();
@@ -72,9 +72,9 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     }
     (async () => {
       try {
-        console.log('[DEBUG] Loading models via helper for brand:', brand);
+        console.log('[SCREEN] Effect: loading models for brand:', brand, 'type of brand:', typeof brand);
         const modelsResult = await getModelsByBrand(brand);
-        console.log('[DEBUG] Models found:', modelsResult.length);
+        console.log('[SCREEN] Models received:', modelsResult.length);
         setModels(modelsResult);
         if (modelsResult.length > 0) {
           setModel(modelsResult[0].id.toString());
@@ -82,7 +82,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
           setModel('');
         }
       } catch (error) {
-        console.error('Erro ao carregar modelos:', error);
+        console.error('[SCREEN] Erro ao carregar modelos:', error);
         setModels([]);
         setModel('');
       }
