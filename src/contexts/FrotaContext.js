@@ -1,5 +1,8 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { getVeiculos, saveVeiculo, updateVeiculoDB, deleteVeiculo } from '../database2';
+import { 
+  getVeiculos, saveVeiculo, updateVeiculoDB, deleteVeiculo,
+  getManutencoes, saveManutencao, updateManutencaoDB, deleteManutencao 
+} from '../database2';
 
 export const FrotaContext = createContext();
 
@@ -9,14 +12,18 @@ export const FrotaProvider = ({ children }) => {
   const [abastecimentos, setAbastecimentos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Carregar veículos do SQLite ao iniciar
+  // Carregar dados do SQLite ao iniciar
   useEffect(() => {
     (async () => {
       try {
-        const veiculosFromDB = await getVeiculos();
+        const [veiculosFromDB, manutencoesFromDB] = await Promise.all([
+          getVeiculos(),
+          getManutencoes()
+        ]);
         setVeiculos(veiculosFromDB);
+        setManutencoes(manutencoesFromDB);
       } catch (error) {
-        console.error('Erro ao carregar veículos:', error);
+        console.error('Erro ao carregar dados do banco:', error);
       } finally {
         setLoading(false);
       }
@@ -56,7 +63,36 @@ export const FrotaProvider = ({ children }) => {
     }
   };
 
-  const addManutencao = (manutencao) => setManutencoes([...manutencoes, manutencao]);
+  const addManutencao = async (manutencao) => {
+    try {
+      await saveManutencao(manutencao);
+      setManutencoes(prev => [...prev, manutencao]);
+    } catch (error) {
+      console.error('Erro ao salvar manutenção:', error);
+      throw error;
+    }
+  };
+
+  const updateManutencao = async (id, dados) => {
+    try {
+      await updateManutencaoDB(id, dados);
+      setManutencoes(prev => prev.map(m => m.id === id ? { ...m, ...dados } : m));
+    } catch (error) {
+      console.error('Erro ao atualizar manutenção:', error);
+      throw error;
+    }
+  };
+
+  const removeManutencao = async (id) => {
+    try {
+      await deleteManutencao(id);
+      setManutencoes(prev => prev.filter(m => m.id !== id));
+    } catch (error) {
+      console.error('Erro ao remover manutenção:', error);
+      throw error;
+    }
+  };
+
   const addAbastecimento = (abastecimento) => setAbastecimentos([...abastecimentos, abastecimento]);
 
   return (
@@ -69,6 +105,8 @@ export const FrotaProvider = ({ children }) => {
       updateVeiculo,
       removeVeiculo,
       addManutencao,
+      updateManutencao,
+      removeManutencao,
       addAbastecimento
     }}>
       {children}

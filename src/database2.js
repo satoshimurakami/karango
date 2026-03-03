@@ -99,6 +99,20 @@ async function initDatabase(db) {
         placa TEXT
       );
     `);
+
+    // Criar tabela manutencoes
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS manutencoes (
+        id TEXT PRIMARY KEY,
+        tipoServico TEXT,
+        veiculo TEXT,
+        dataPrevista TEXT,
+        urgencia TEXT,
+        prestador TEXT,
+        custo TEXT,
+        km TEXT
+      );
+    `);
   } catch (error) {
     console.log('Erro ao inicializar banco:', error);
   }
@@ -154,4 +168,31 @@ export function getModelsByBrand(idMarca) {
       [idMarca]
     );
   });
+}
+
+// Maintenance CRUD
+export async function getManutencoes() {
+  const db = await getDb();
+  return await db.getAllAsync('SELECT * FROM manutencoes ORDER BY dataPrevista ASC');
+}
+
+export async function saveManutencao(m) {
+  const db = await getDb();
+  await db.runAsync(
+    'INSERT INTO manutencoes (id, tipoServico, veiculo, dataPrevista, urgencia, prestador, custo, km) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [m.id, m.tipoServico, m.veiculo, m.dataPrevista, m.urgencia, m.prestador, m.custo, m.km]
+  );
+}
+
+export async function updateManutencaoDB(id, d) {
+  const db = await getDb();
+  await db.runAsync(
+    'UPDATE manutencoes SET tipoServico = ?, veiculo = ?, dataPrevista = ?, urgencia = ?, prestador = ?, custo = ?, km = ? WHERE id = ?',
+    [d.tipoServico, d.veiculo, d.dataPrevista, d.urgencia, d.prestador, d.custo, d.km, id]
+  );
+}
+
+export async function deleteManutencao(id) {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM manutencoes WHERE id = ?', [id]);
 }

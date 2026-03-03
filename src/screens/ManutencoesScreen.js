@@ -1,8 +1,22 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { FrotaContext } from '../contexts/FrotaContext';
 
 const ManutencoesScreen = ({ navigation }) => {
+  const { manutencoes, removeManutencao } = useContext(FrotaContext);
+
+  const handleDelete = (id) => {
+    Alert.alert(
+      "Confirmar Exclusão",
+      "Tem certeza que deseja remover este agendamento?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Excluir", style: "destructive", onPress: () => removeManutencao(id) }
+      ]
+    );
+  };
+
   return (
     <View style={styles.root}>
       {/* Header */}
@@ -24,104 +38,72 @@ const ManutencoesScreen = ({ navigation }) => {
         </View>
       </View>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* Calendário fake */}
+        {/* Calendário fake (omitido para brevidade ou mantido como visual) */}
         <View style={styles.calendarBox}>
+          {/* ... calendar content ... */}
           <View style={styles.calendarHeaderRow}>
-            <TouchableOpacity>
-              <MaterialIcons name="chevron-left" size={22} color="#64748b" />
-            </TouchableOpacity>
+            <TouchableOpacity><MaterialIcons name="chevron-left" size={22} color="#64748b" /></TouchableOpacity>
             <View style={{ alignItems: 'center' }}>
-              <Text style={styles.calendarMonth}>February</Text>
-              <Text style={styles.calendarYear}>2026</Text>
+              <Text style={styles.calendarMonth}>Agendamentos</Text>
+              <Text style={styles.calendarYear}>Visão de Lista</Text>
             </View>
-            <View style={styles.calendarHeaderRight}>
-              <Text style={styles.calendarMonthType}>Month</Text>
-              <TouchableOpacity>
-                <MaterialIcons name="chevron-right" size={22} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* Dias da semana */}
-          <View style={styles.calendarDaysRow}>
-            {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
-              <Text key={d} style={styles.calendarDayLabel}>{d}</Text>
-            ))}
-          </View>
-          {/* Dias do mês (mock) */}
-          <View style={styles.calendarDatesGrid}>
-            {[...Array(28)].map((_, i) => (
-              <View key={i} style={styles.calendarDateCell}>
-                <Text style={styles.calendarDateText}>{i+1}</Text>
-              </View>
-            ))}
+            <TouchableOpacity><MaterialIcons name="chevron-right" size={22} color="#64748b" /></TouchableOpacity>
           </View>
         </View>
-        {/* Filtros */}
-        <View style={styles.filtersBox}>
-          <Text style={styles.filtersTitle}>Filtros</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersRow}>
-            <TouchableOpacity style={[styles.filterBtn, styles.filterBtnActive]}>
-              <MaterialIcons name="filter-list" size={18} color="#fff" />
-              <Text style={styles.filterBtnText}>Todos</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterBtn}>
-              <MaterialIcons name="schedule" size={18} color="#64748b" />
-              <Text style={styles.filterBtnText}>Agendados</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterBtn}>
-              <MaterialIcons name="warning" size={18} color="#ff6b35" />
-              <Text style={[styles.filterBtnText, { color: '#ff6b35' }]}>Atrasados</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
+
         {/* Próximas Manutenções */}
         <View style={styles.maintBox}>
           <View style={styles.maintHeaderRow}>
-            <Text style={styles.maintHeader}>Próximas Manutenções</Text>
-            <Text style={styles.maintCount}>6</Text>
+            <Text style={styles.maintHeader}>Agendamentos Gravados</Text>
+            <Text style={styles.maintCount}>{manutencoes.length}</Text>
           </View>
-          {/* Card 1 */}
-          <View style={styles.maintCard}>
-            <View style={styles.maintCardHeaderRow}>
-              <View>
-                <Text style={styles.maintCardTitle}>Inspeção Geral</Text>
-                <Text style={styles.maintCardSubtitle}>FL-004 - Iveco Daily</Text>
+          
+          {manutencoes.length === 0 ? (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <MaterialIcons name="event-busy" size={48} color="#cbd5e1" />
+              <Text style={{ color: '#64748b', marginTop: 12 }}>Nenhum agendamento encontrado.</Text>
+            </View>
+          ) : (
+            manutencoes.map((item) => (
+              <View key={item.id} style={styles.maintCard}>
+                <View style={styles.maintCardHeaderRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.maintCardTitle}>{item.tipoServico}</Text>
+                    <Text style={styles.maintCardSubtitle}>{item.veiculo}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <Text style={
+                      item.urgencia === 'Alta' ? styles.maintCardBadgeHigh : 
+                      item.urgencia === 'Média' ? styles.maintCardBadgeMed : 
+                      styles.maintCardBadgeLow
+                    }>{item.urgencia}</Text>
+                    <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                      <MaterialIcons name="delete-outline" size={22} color="#ef4444" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.maintCardInfoRow}>
+                  <View style={styles.maintCardInfoItem}>
+                    <MaterialIcons name="calendar-today" size={16} color="#64748b" />
+                    <Text style={styles.maintCardInfoText}>{item.dataPrevista}</Text>
+                  </View>
+                  <Text style={styles.maintCardPrice}>R$ {item.custo || '0,00'}</Text>
+                </View>
+                {item.prestador && (
+                  <View style={styles.maintCardInfoItem}>
+                    <MaterialIcons name="business" size={16} color="#64748b" />
+                    <Text style={styles.maintCardInfoText}>{item.prestador}</Text>
+                  </View>
+                )}
+                {item.km && (
+                  <View style={styles.maintCardInfoItem}>
+                    <MaterialIcons name="speed" size={16} color="#64748b" />
+                    <Text style={styles.maintCardInfoText}>{item.km} km</Text>
+                  </View>
+                )}
               </View>
-              <Text style={styles.maintCardBadgeLow}>Baixa</Text>
-            </View>
-            <View style={styles.maintCardInfoRow}>
-              <View style={styles.maintCardInfoItem}>
-                <MaterialIcons name="calendar-today" size={16} color="#64748b" />
-                <Text style={styles.maintCardInfoText}>27/01/2026</Text>
-              </View>
-              <Text style={styles.maintCardPrice}>R$ 450,00</Text>
-            </View>
-            <View style={styles.maintCardInfoItem}>
-              <MaterialIcons name="business" size={16} color="#64748b" />
-              <Text style={styles.maintCardInfoText}>Centro Automotivo Premium</Text>
-            </View>
-            <View style={styles.maintCardInfoItem}>
-              <MaterialIcons name="speed" size={16} color="#64748b" />
-              <Text style={styles.maintCardInfoText}>20000 km</Text>
-            </View>
-          </View>
-          {/* Card 2 */}
-          <View style={styles.maintCard}>
-            <View style={styles.maintCardHeaderRow}>
-              <View>
-                <Text style={styles.maintCardTitle}>Serviço de Freios</Text>
-                <Text style={styles.maintCardSubtitle}>ABC-1234 - Ford Transit</Text>
-              </View>
-              <Text style={styles.maintCardBadgeHigh}>Alta</Text>
-            </View>
-            <View style={styles.maintCardInfoRow}>
-              <View style={styles.maintCardInfoItem}>
-                <MaterialIcons name="calendar-today" size={16} color="#64748b" />
-                <Text style={styles.maintCardInfoText}>12/02/2026</Text>
-              </View>
-              <Text style={styles.maintCardPrice}>R$ 1.200,00</Text>
-            </View>
-          </View>
+            ))
+          )}
         </View>
       </ScrollView>
       {/* Botão agendar serviço */}
@@ -353,6 +335,16 @@ const styles = StyleSheet.create({
   maintCardBadgeLow: {
     backgroundColor: '#bbf7d0',
     color: '#22c55e',
+    fontSize: 10,
+    fontWeight: 'bold',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    textTransform: 'uppercase',
+  },
+  maintCardBadgeMed: {
+    backgroundColor: '#fff7ed',
+    color: '#fb923c',
     fontSize: 10,
     fontWeight: 'bold',
     borderRadius: 8,

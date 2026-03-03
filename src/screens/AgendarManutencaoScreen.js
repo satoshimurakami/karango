@@ -1,10 +1,24 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { FrotaContext } from '../contexts/FrotaContext';
 
+const TIPOS_SERVICO = [
+  'Troca de Óleo',
+  'Alinhamento e Balanceamento',
+  'Revisão Geral',
+  'Sistema de Freios',
+  'Suspensão',
+  'Correia Dentada',
+  'Bateria',
+  'Pneus',
+  'Elétrica',
+  'Outro'
+];
+
 const AgendarManutencaoScreen = ({ navigation }) => {
-  const { addManutencao } = useContext(FrotaContext);
+  const { addManutencao, veiculos } = useContext(FrotaContext);
   const [tipoServico, setTipoServico] = useState('Troca de Óleo');
   const [veiculo, setVeiculo] = useState('');
   const [dataPrevista, setDataPrevista] = useState('10/02/2026');
@@ -12,6 +26,14 @@ const AgendarManutencaoScreen = ({ navigation }) => {
   const [prestador, setPrestador] = useState('');
   const [custo, setCusto] = useState('');
   const [km, setKm] = useState('');
+
+  // Inicializar com o primeiro veículo se disponível
+  useEffect(() => {
+    if (veiculos && veiculos.length > 0 && !veiculo) {
+      const v = veiculos[0];
+      setVeiculo(`${v.brandNome} ${v.modelNome} - ${v.placa}`);
+    }
+  }, [veiculos]);
 
   const handleSalvar = () => {
     addManutencao({
@@ -62,25 +84,33 @@ const AgendarManutencaoScreen = ({ navigation }) => {
           </View>
           <View style={styles.formContent}>
             <Text style={styles.formLabel}>Tipo de Serviço</Text>
-            <View style={styles.inputRow}>
-              <MaterialIcons name="oil-barrel" size={20} color="#1e3a5f" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={tipoServico}
-                onChangeText={setTipoServico}
-                placeholder="Tipo de Serviço"
-                placeholderTextColor="#64748b"
-              />
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={tipoServico}
+                onValueChange={(itemValue) => setTipoServico(itemValue)}
+                style={styles.picker}
+              >
+                {TIPOS_SERVICO.map(tipo => (
+                  <Picker.Item key={tipo} label={tipo} value={tipo} />
+                ))}
+              </Picker>
             </View>
             <Text style={styles.formLabel}>Veículo</Text>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.input}
-                value={veiculo}
-                onChangeText={setVeiculo}
-                placeholder="Selecione um veículo"
-                placeholderTextColor="#64748b"
-              />
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={veiculo}
+                onValueChange={(itemValue) => setVeiculo(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Selecione um veículo" value="" />
+                {veiculos.map((v) => (
+                  <Picker.Item 
+                    key={v.id} 
+                    label={`${v.brandNome} ${v.modelNome} - ${v.placa}`} 
+                    value={`${v.brandNome} ${v.modelNome} - ${v.placa}`} 
+                  />
+                ))}
+              </Picker>
             </View>
             <Text style={styles.formLabel}>Data Prevista</Text>
             <View style={styles.inputRow}>
@@ -254,9 +284,24 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 16,
   },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 12,
+    height: 55,
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 55,
+    width: '100%',
+    color: '#222',
+  },
   input: {
     flex: 1,
-    height: 40,
+    height: 48,
     fontSize: 15,
     color: '#222',
     backgroundColor: 'transparent',
