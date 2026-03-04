@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { 
   getVeiculos, saveVeiculo, updateVeiculoDB, deleteVeiculo,
-  getManutencoes, saveManutencao, updateManutencaoDB, deleteManutencao 
+  getManutencoes, saveManutencao, updateManutencaoDB, deleteManutencao,
+  getAbastecimentos, saveAbastecimento, updateAbastecimentoDB, deleteAbastecimento
 } from '../database2';
 
 export const FrotaContext = createContext();
@@ -16,12 +17,14 @@ export const FrotaProvider = ({ children }) => {
   useEffect(() => {
     (async () => {
       try {
-        const [veiculosFromDB, manutencoesFromDB] = await Promise.all([
+        const [veiculosFromDB, manutencoesFromDB, abastecimentosFromDB] = await Promise.all([
           getVeiculos(),
-          getManutencoes()
+          getManutencoes(),
+          getAbastecimentos()
         ]);
         setVeiculos(veiculosFromDB);
         setManutencoes(manutencoesFromDB);
+        setAbastecimentos(abastecimentosFromDB);
       } catch (error) {
         console.error('Erro ao carregar dados do banco:', error);
       } finally {
@@ -93,7 +96,35 @@ export const FrotaProvider = ({ children }) => {
     }
   };
 
-  const addAbastecimento = (abastecimento) => setAbastecimentos([...abastecimentos, abastecimento]);
+  const addAbastecimento = async (abastecimento) => {
+    try {
+      await saveAbastecimento(abastecimento);
+      setAbastecimentos(prev => [abastecimento, ...prev]);
+    } catch (error) {
+      console.error('Erro ao salvar abastecimento:', error);
+      throw error;
+    }
+  };
+
+  const updateAbastecimento = async (id, dados) => {
+    try {
+      await updateAbastecimentoDB(id, dados);
+      setAbastecimentos(prev => prev.map(a => a.id === id ? { ...a, ...dados } : a));
+    } catch (error) {
+      console.error('Erro ao atualizar abastecimento:', error);
+      throw error;
+    }
+  };
+
+  const removeAbastecimento = async (id) => {
+    try {
+      await deleteAbastecimento(id);
+      setAbastecimentos(prev => prev.filter(a => a.id !== id));
+    } catch (error) {
+      console.error('Erro ao remover abastecimento:', error);
+      throw error;
+    }
+  };
 
   return (
     <FrotaContext.Provider value={{
@@ -107,7 +138,9 @@ export const FrotaProvider = ({ children }) => {
       addManutencao,
       updateManutencao,
       removeManutencao,
-      addAbastecimento
+      addAbastecimento,
+      updateAbastecimento,
+      removeAbastecimento
     }}>
       {children}
     </FrotaContext.Provider>

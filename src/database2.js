@@ -113,6 +113,24 @@ async function initDatabase(db) {
         km TEXT
       );
     `);
+
+    // Criar tabela abastecimentos
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS abastecimentos (
+        id TEXT PRIMARY KEY,
+        veiculoId TEXT NOT NULL,
+        veiculoPlaca TEXT,
+        quantidade REAL NOT NULL,
+        valorTotal REAL NOT NULL,
+        valorLitro REAL,
+        data TEXT NOT NULL,
+        km REAL,
+        posto TEXT,
+        tipoCombustivel TEXT,
+        observacoes TEXT,
+        FOREIGN KEY (veiculoId) REFERENCES veiculos(id) ON DELETE CASCADE
+      );
+    `);
   } catch (error) {
     console.log('Erro ao inicializar banco:', error);
   }
@@ -195,4 +213,39 @@ export async function updateManutencaoDB(id, d) {
 export async function deleteManutencao(id) {
   const db = await getDb();
   await db.runAsync('DELETE FROM manutencoes WHERE id = ?', [id]);
+}
+
+// Abastecimentos CRUD
+export async function getAbastecimentos() {
+  const db = await getDb();
+  return await db.getAllAsync('SELECT * FROM abastecimentos ORDER BY data DESC');
+}
+
+export async function getAbastecimentosByVeiculo(veiculoId) {
+  const db = await getDb();
+  return await db.getAllAsync(
+    'SELECT * FROM abastecimentos WHERE veiculoId = ? ORDER BY data DESC',
+    [veiculoId]
+  );
+}
+
+export async function saveAbastecimento(a) {
+  const db = await getDb();
+  await db.runAsync(
+    'INSERT INTO abastecimentos (id, veiculoId, veiculoPlaca, quantidade, valorTotal, valorLitro, data, km, posto, tipoCombustivel, observacoes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [a.id, a.veiculoId, a.veiculoPlaca, a.quantidade, a.valorTotal, a.valorLitro, a.data, a.km, a.posto, a.tipoCombustivel, a.observacoes]
+  );
+}
+
+export async function updateAbastecimentoDB(id, d) {
+  const db = await getDb();
+  await db.runAsync(
+    'UPDATE abastecimentos SET veiculoId = ?, veiculoPlaca = ?, quantidade = ?, valorTotal = ?, valorLitro = ?, data = ?, km = ?, posto = ?, tipoCombustivel = ?, observacoes = ? WHERE id = ?',
+    [d.veiculoId, d.veiculoPlaca, d.quantidade, d.valorTotal, d.valorLitro, d.data, d.km, d.posto, d.tipoCombustivel, d.observacoes, id]
+  );
+}
+
+export async function deleteAbastecimento(id) {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM abastecimentos WHERE id = ?', [id]);
 }

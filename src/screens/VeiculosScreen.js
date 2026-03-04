@@ -68,8 +68,33 @@ const VeiculosScreen = ({ navigation }) => {
             </View>
           </View>
           <Text style={styles.timestamp}>15min atrás</Text>
+          
+          {/* Action Buttons */}
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity 
+              style={[styles.actionBtn, styles.actionBtnPrimary]}
+              onPress={() => navigation.navigate('Abastecimento', { veiculoId: item.id })}
+            >
+              <MaterialIcons name="local-gas-station" size={16} color="#0284c7" />
+              <Text style={[styles.actionBtnText, styles.actionBtnTextPrimary]}>Abastecimentos</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.actionBtn, styles.actionBtnSecondary]}
+              onPress={() => navigation.navigate('AgendarManutencao', { veiculoId: item.id })}
+            >
+              <MaterialIcons name="build" size={16} color="#059669" />
+              <Text style={[styles.actionBtnText, styles.actionBtnTextSecondary]}>Manutenção</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.cardActions}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('CadastroVeiculo', { veiculoId: item.id })} 
+            style={styles.actionButton}
+          >
+            <MaterialIcons name="edit" size={20} color="#0284c7" />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => handleRemove(item)} style={styles.actionButton}>
             <MaterialIcons name="delete" size={20} color="#ef4444" />
           </TouchableOpacity>
@@ -301,6 +326,41 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#94a3b8',
     marginTop: 8,
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  actionBtnPrimary: {
+    backgroundColor: '#e0f2fe',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  actionBtnSecondary: {
+    backgroundColor: '#d1fae5',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+  },
+  actionBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  actionBtnTextPrimary: {
+    color: '#0284c7',
+  },
+  actionBtnTextSecondary: {
+    color: '#059669',
   },
   emptyText: {
     textAlign: 'center',
