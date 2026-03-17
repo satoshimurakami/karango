@@ -5,8 +5,10 @@ import { FrotaContext } from '../contexts/FrotaContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getVehicleTypes, getBrandsByType, getModelsByBrand } from '../database2';
 
-const CadastroVeiculoScreen = ({ navigation }) => {
-  const { addVeiculo } = useContext(FrotaContext);
+const CadastroVeiculoScreen = ({ navigation, route }) => {
+  const { veiculos, addVeiculo, updateVeiculo } = useContext(FrotaContext);
+  const veiculoId = route?.params?.veiculoId;
+  const veiculoEmEdicao = veiculos.find(v => v.id === veiculoId);
   const [tiposVeiculo, setTiposVeiculo] = useState([]);
   const [tipo, setTipo] = useState('');
   const [brand, setBrand] = useState('');
@@ -16,6 +18,16 @@ const CadastroVeiculoScreen = ({ navigation }) => {
   const [ano, setAno] = useState('');
   const [anos, setAnos] = useState([]);
   const [placa, setPlaca] = useState('');
+
+  useEffect(() => {
+    if (!veiculoEmEdicao) return;
+
+    setTipo(veiculoEmEdicao.tipo || '');
+    setBrand(veiculoEmEdicao.brandId ? veiculoEmEdicao.brandId.toString() : '');
+    setModel(veiculoEmEdicao.modelId ? veiculoEmEdicao.modelId.toString() : '');
+    setAno(veiculoEmEdicao.ano || '');
+    setPlaca(veiculoEmEdicao.placa || '');
+  }, [veiculoEmEdicao]);
 
   // Carregar tipos de veículo do banco (DISTINCT)
   useEffect(() => {
@@ -43,10 +55,19 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     (async () => {
       try {
         const brandsResult = await getBrandsByType(tipo);
-        const marcas = brandsResult.map(r => ({ brandId: r.brandId, name: r.name }));
+        const marcas = brandsResult.map(r => ({ brandId: r.brandId.toString(), name: r.name }));
         setBrands(marcas);
+
+        const marcaEdicao = veiculoEmEdicao?.brandId ? veiculoEmEdicao.brandId.toString() : '';
+        const marcaExisteNaLista = marcaEdicao && marcas.some((m) => m.brandId === marcaEdicao);
+
+        if (marcaExisteNaLista) {
+          setBrand(marcaEdicao);
+          return;
+        }
+
         if (marcas.length > 0) {
-          setBrand(marcas[0].brandId);
+          setBrand((prev) => prev || marcas[0].brandId);
         } else {
           setBrand('');
         }
@@ -56,7 +77,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
         setBrand('');
       }
     })();
-  }, [tipo]); // Recarrega quando o tipo muda
+  }, [tipo, veiculoEmEdicao]); // Recarrega quando o tipo muda
 
   // Carregar modelos ao trocar marca (async)
   useEffect(() => {
@@ -67,10 +88,19 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     }
     (async () => {
       try {
-        const modelsResult = await getModelsByBrand(brand);
+        const modelsResult = await getModelsByBrand(Number(brand));
         setModels(modelsResult);
+
+        const modeloEdicao = veiculoEmEdicao?.modelId ? veiculoEmEdicao.modelId.toString() : '';
+        const modeloExisteNaLista = modeloEdicao && modelsResult.some((m) => m.id.toString() === modeloEdicao);
+
+        if (modeloExisteNaLista) {
+          setModel(modeloEdicao);
+          return;
+        }
+
         if (modelsResult.length > 0) {
-          setModel(modelsResult[0].id.toString());
+          setModel((prev) => prev || modelsResult[0].id.toString());
         } else {
           setModel('');
         }
@@ -80,7 +110,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
         setModel('');
       }
     })();
-  }, [brand]);
+  }, [brand, veiculoEmEdicao]);
 
   // Popular anos
   useEffect(() => {
@@ -90,7 +120,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
       anosArray.push(y.toString());
     }
     setAnos(anosArray);
-    setAno(anosArray[0]);
+    setAno((prev) => prev || anosArray[0]);
   }, []);
 
   const handleSalvar = async () => {
@@ -99,10 +129,9 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     const selectedModel = models.find(m => m.id.toString() === model);
     
     const veiculo = {
-      id: Date.now().toString(),
       tipo: tipo,
       tipoNome: tipo, // vehicleType já é o valor do banco
-      brandId: brand,
+      brandId: brand ? Number(brand) : null,
       brandNome: selectedBrand?.name || '',
       modelId: model,
       modelNome: selectedModel?.name || '',
@@ -111,7 +140,14 @@ const CadastroVeiculoScreen = ({ navigation }) => {
     };
     
     try {
-      await addVeiculo(veiculo);
+      if (veiculoEmEdicao) {
+        await updateVeiculo(veiculoEmEdicao.id, veiculo);
+      } else {
+        await addVeiculo({
+          id: Date.now().toString(),
+          ...veiculo
+        });
+      }
       navigation.goBack();
     } catch (error) {
       console.error('Erro ao salvar veículo:', error);
@@ -170,14 +206,14 @@ const CadastroVeiculoScreen = ({ navigation }) => {
             <MaterialIcons name="info" size={22} color="#1e3a5f" />
             <Text style={styles.specsHeader}>Especificações do Veículo</Text>
           </View>
-          <View style={styles.specsList}>
+          {/* <View style={styles.specsList}>
             <View style={styles.specRow}><Text style={styles.specLabel}>Marca</Text><Text style={styles.specValue}>Ford</Text></View>
             <View style={styles.specRow}><Text style={styles.specLabel}>Modelo</Text><Text style={styles.specValue}>Ford Transit 2022</Text></View>
             <View style={styles.specRow}><Text style={styles.specLabel}>Ano</Text><Text style={styles.specValue}>2022</Text></View>
             <View style={styles.specRow}><Text style={styles.specLabel}>Cor</Text><Text style={styles.specValue}>Branco</Text></View>
             <View style={styles.specRow}><Text style={styles.specLabel}>Combustível</Text><Text style={styles.specValue}>Diesel</Text></View>
             <View style={styles.specRow}><Text style={styles.specLabel}>Quilometragem</Text><Text style={styles.specValue}>45.230 km</Text></View>
-          </View>
+          </View> */}
           {/* Formulário de cadastro */}
           <View style={styles.formContainer}>
             <Text style={styles.formLabel}>Tipo</Text>
@@ -242,7 +278,7 @@ const CadastroVeiculoScreen = ({ navigation }) => {
             />
             <TouchableOpacity style={styles.saveBtn} onPress={handleSalvar}>
               <MaterialIcons name="add" size={22} color="#fff" />
-              <Text style={styles.saveBtnText}>Salvar Veículo</Text>
+              <Text style={styles.saveBtnText}>{veiculoEmEdicao ? 'Atualizar Veículo' : 'Salvar Veículo'}</Text>
             </TouchableOpacity>
           </View>
         </View>
