@@ -35,8 +35,8 @@ const CadastroVeiculoScreen = ({ navigation, route }) => {
       try {
         const tipos = await getVehicleTypes();
         setTiposVeiculo(tipos);
-        if (tipos.length > 0 && !tipo) {
-          setTipo(tipos[0]);
+        if (tipos.length > 0) {
+          setTipo((prev) => prev || tipos[0]);
         }
       } catch (error) {
         console.error('[SCREEN] Erro ao carregar tipos de veículo:', error);
