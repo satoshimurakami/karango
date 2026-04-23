@@ -154,6 +154,13 @@ const CadastroVeiculoScreen = ({ navigation, route }) => {
     }
   };
 
+  // Valores derivados para exibição do cabeçalho (atualizam conforme os campos do formulário)
+  const headerBrandName = brands.find(b => b.brandId === brand)?.name || veiculoEmEdicao?.brandNome || '';
+  const headerModelName = models.find(m => m.id.toString() === model)?.name || veiculoEmEdicao?.modelNome || '';
+  const headerTitleText = [headerBrandName, headerModelName, ano].filter(Boolean).join(' ');
+  const headerSubtitleText = (placa || veiculoEmEdicao?.placa) ? `Placa: ${placa || veiculoEmEdicao?.placa}` : 'Placa: —';
+  const headerDriverName = veiculoEmEdicao?.driverNome || veiculoEmEdicao?.motorista || '';
+
   return (
     <View style={styles.root}>
       {/* Status bar fake */}
@@ -184,11 +191,11 @@ const CadastroVeiculoScreen = ({ navigation, route }) => {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Text style={styles.statusBadge}>Ativo</Text>
               </View>
-              <Text style={styles.headerTitle}>Ford Transit 2022</Text>
-              <Text style={styles.headerSubtitle}>Placa: ABC-1234</Text>
+              <Text style={styles.headerTitle}>{headerTitleText || '—'}</Text>
+              <Text style={styles.headerSubtitle}>{headerSubtitleText}</Text>
               <View style={styles.headerDriverRow}>
                 <MaterialIcons name="person" size={18} color="#fff" />
-                <Text style={styles.headerDriverText}>Motorista: João Silva</Text>
+                <Text style={styles.headerDriverText}>{headerDriverName ? `Motorista: ${headerDriverName}` : 'Motorista: —'}</Text>
               </View>
             </View>
           </ImageBackground>
